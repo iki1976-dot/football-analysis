@@ -1,5 +1,4 @@
-<!doctype html>
-
+ <!doctype html>
 <html lang="bg">
 <head>
 <meta charset="utf-8">
@@ -10,11 +9,10 @@ body{margin:0;background:#0b1512;color:#f2f7f3;font:16px system-ui,sans-serif}
 header,main{max-width:900px;margin:auto;padding:18px}
 h1{font-size:27px}
 .toolbar,.match,.notice{background:#13241d;border:1px solid #2c493b;border-radius:14px;padding:14px;margin:12px 0}
-input,select,button{font:inherit;padding:12px;border-radius:9px;margin:4px;max-width:100%}
-button{background:#8ce0a8;font-weight:bold}
+input,button{font:inherit;padding:12px;border-radius:9px;margin:4px;max-width:100%}
+button{background:#8ce0a8;font-weight:bold;color:#102017}
 .notice{color:#ffe2a5}
-.match{line-height:1.7}
-.market{background:#1a3027;padding:8px;margin:5px;border-radius:8px}
+.match{line-height:1.7;overflow-wrap:anywhere}
 .muted{color:#a9beb1}
 </style>
 </head>
@@ -26,24 +24,65 @@ button{background:#8ce0a8;font-weight:bold}
 <main>
 <div class="toolbar">
 <label>Дата: <input id="date" type="date"></label>
-<button id="load">Покажи анализатора</button>
+<button id="load">Зареди мачовете</button>
 </div>
-<div class="notice">Важно: реалните прогнози на типстъри все още не са свързани. Не показваме измислено съвпадение.</div>
-<div id="result">
-<div class="match">
-<h2>Пазари за сравнение</h2>
-<div class="market">1X — няма проверени прогнози</div>
-<div class="market">Над 1,5 гола — няма проверени прогнози</div>
-<div class="market">Над 2,5 гола — няма проверени прогнози</div>
-<div class="market">Гол/гол — няма проверени прогнози</div>
-<div class="market">Над 5,5 корнера — няма проверени прогнози</div>
-<div class="market">Над 6,5 корнера — няма проверени прогнози</div>
+<div class="notice">
+Реалните прогнози на типстъри все още не са свързани. Няма да показваме измислено съвпадение.
 </div>
-</div>
+<div id="result" class="match">Избери дата и натисни „Зареди мачовете“.</div>
 </main>
 <script>
-document.getElementById('date').value=new Date().toLocaleDateString('en-CA');
-document.getElementById('load').onclick=()=>{document.getElementById('result').innerHTML='<div class="match"><h2>Избрана дата: '+document.getElementById('date').value+'</h2><p>Следващата стъпка е свързване с реални мачове и проверени източници за прогнози.</p></div>'};
+const dateInput=document.getElementById('date');
+const result=document.getElementById('result');
+
+const now=new Date();
+dateInput.value=[
+now.getFullYear(),
+String(now.getMonth()+1).padStart(2,'0'),
+String(now.getDate()).padStart(2,'0')
+].join('-');
+
+document.getElementById('load').addEventListener('click',async()=>{
+  result.textContent='Зареждам мачовете...';
+  try{
+    const response=await fetch('/.netlify/functions/fixtures?date='+encodeURIComponent(dateInput.value));
+    const data=await response.json();
+
+    if(!response.ok || data.error){
+      throw new Error(data.error || 'Грешка при зареждането.');
+    }
+
+    const fixtures=data.response || [];
+    if(!fixtures.length){
+      result.textContent='Няма намерени мачове за тази дата.';
+      return;
+    }
+
+    result.replaceChildren();
+    const heading=document.createElement('h2');
+    heading.textContent='Мачове за '+dateInput.value;
+    result.appendChild(heading);
+
+    fixtures.forEach(item=>{
+      const card=document.createElement('div');
+      card.className='match';
+
+      const title=document.createElement('h3');
+      title.textContent=(item.teams?.home?.name || 'Домакин')+
+        ' – '+(item.teams?.away?.name || 'Гост');
+
+      const details=document.createElement('p');
+      details.textContent=
+        (item.league?.name || 'Първенство')+' · '+
+        (item.fixture?.date ? new Date(item.fixture.date).toLocaleTimeString('bg-BG',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Sofia'}) : 'Часът не е наличен');
+
+      card.append(title,details);
+      result.appendChild(card);
+    });
+  }catch(error){
+    result.textContent='Не успях да заредя мачовете. Провери връзката и опитай отново.';
+  }
+});
 </script>
 </body>
 </html>
