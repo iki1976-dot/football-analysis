@@ -1,0 +1,49 @@
+<!doctype html>
+
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Футболен анализ</title>
+<style>
+body{margin:0;background:#0b1512;color:#f2f7f3;font:16px system-ui,sans-serif}
+header,main{max-width:900px;margin:auto;padding:18px}
+h1{font-size:27px}
+.toolbar,.match,.notice{background:#13241d;border:1px solid #2c493b;border-radius:14px;padding:14px;margin:12px 0}
+input,select,button{font:inherit;padding:12px;border-radius:9px;margin:4px;max-width:100%}
+button{background:#8ce0a8;font-weight:bold}
+.notice{color:#ffe2a5}
+.match{line-height:1.7}
+.market{background:#1a3027;padding:8px;margin:5px;border-radius:8px}
+.muted{color:#a9beb1}
+</style>
+</head>
+<body>
+<header>
+<h1>⚽ Футболен анализ</h1>
+<p class="muted">Мачове за деня · анализ на прогнози</p>
+</header>
+<main>
+<div class="toolbar">
+<label>Дата: <input id="date" type="date"></label>
+<button id="load">Покажи анализатора</button>
+</div>
+<div class="notice">Важно: реалните прогнози на типстъри все още не са свързани. Не показваме измислено съвпадение.</div>
+<div id="result">
+<div class="match">
+<h2>Пазари за сравнение</h2>
+<div class="market">1X — няма проверени прогнози</div>
+<div class="market">Над 1,5 гола — няма проверени прогнози</div>
+<div class="market">Над 2,5 гола — няма проверени прогнози</div>
+<div class="market">Гол/гол — няма проверени прогнози</div>
+<div class="market">Над 5,5 корнера — няма проверени прогнози</div>
+<div class="market">Над 6,5 корнера — няма проверени прогнози</div>
+</div>
+</div>
+</main>
+<script>
+document.getElementById('date').value=new Date().toLocaleDateString('en-CA');
+document.getElementById('load').onclick=()=>{document.getElementById('result').innerHTML='<div class="match"><h2>Избрана дата: '+document.getElementById('date').value+'</h2><p>Следващата стъпка е свързване с реални мачове и проверени източници за прогнози.</p></div>'};
+</script>
+</body>
+</html>
