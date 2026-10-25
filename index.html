@@ -1,79 +1,350 @@
- <!
-.toolbar,.match,.notice{background:#13241d;border:1px solid #2c493b;border-radius:14px;padding:14px;margin:12px 0}
-input,button{font:inherit;padding:12px;border-radius:9px;margin:4px;max-width:100%}
-button{background:#8ce0a8;font-weight:bold;color:#102017}
-.notice{color:#ffe2a5}
-.match{line-height:1.7;overflow-wrap:anywhere}
-.muted{color:#a9beb1}
-</style>
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a15">
+  <title>Футболен анализатор</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #101a15;
+      color: #f0f7f2;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 10px 0 18px;
+    }
+
+    h1 {
+      font-size: 27px;
+      margin: 0 0 8px;
+    }
+
+    .muted {
+      color: #a9beb1;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .toolbar,
+    .match,
+    .notice {
+      background: #13241d;
+      border: 1px solid #2c493b;
+      border-radius: 14px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+
+    .toolbar label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    input,
+    button {
+      width: 100%;
+      font: inherit;
+      padding: 13px;
+      border-radius: 9px;
+      margin: 5px 0;
+    }
+
+    input {
+      background: #0c1711;
+      color: white;
+      border: 1px solid #456453;
+    }
+
+    button {
+      background: #8ce0a8;
+      border: 0;
+      font-weight: bold;
+      color: #102017;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .notice {
+      color: #ffe2a5;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .match {
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .league {
+      color: #8ce0a8;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .teams {
+      font-size: 19px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .time {
+      color: #a9beb1;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 22px 0 10px;
+    }
+
+    .markets {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .market {
+      background: #1b3327;
+      border: 1px solid #345541;
+      border-radius: 10px;
+      padding: 11px;
+      font-size: 13px;
+      line-height: 1.5;
+      min-width: 0;
+    }
+
+    .pending {
+      display: block;
+      color: #ffd580;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .status {
+      color: #d2e4d8;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 14px 0;
+    }
+
+    @media (max-width: 380px) {
+      body {
+        padding: 10px;
+      }
+
+      .markets {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header>
-<h1>⚽ Футболен анализ</h1>
-<p class="muted">Мачове за деня · анализ на прогнози</p>
-</header>
-<main>
-<div class="toolbar">
-<label>Дата: <input id="date" type="date"></label>
-<button id="load">Зареди мачовете</button>
-</div>
-<div class="notice">
-Реалните прогнози на типстъри все още не са свързани. Няма да показваме измислено съвпадение.
-</div>
-<div id="result" class="match">Избери дата и натисни „Зареди мачовете“.</div>
-</main>
-<script>
-const dateInput=document.getElementById('date');
-const result=document.getElementById('result');
+  <main class="container">
+    <header>
+      <h1>⚽ Футболен анализатор</h1>
+      <p class="muted">
+        Европейски футбол · Пазари · Анализ на прогнози
+      </p>
+    </header>
 
-const now=new Date();
-dateInput.value=[
-now.getFullYear(),
-String(now.getMonth()+1).padStart(2,'0'),
-String(now.getDate()).padStart(2,'0')
-].join('-');
+    <section class="toolbar">
+      <label for="matchDate">Избери дата на мачовете:</label>
+      <input id="matchDate" type="date">
+      <button id="loadButton" type="button">Зареди мачовете</button>
+    </section>
 
-document.getElementById('load').addEventListener('click',async()=>{
-  result.textContent='Зареждам мачовете...';
-  try{
-    const response=await fetch('/.netlify/functions/fixtures?date='+encodeURIComponent(dateInput.value));
-    const data=await response.json();
+    <div class="notice">
+      <strong>Важно:</strong> Реалните прогнози на типстъри и анализатори
+      все още не са свързани. Няма да показваме измислени съвпадения,
+      проценти или статистика за корнери.
+    </div>
 
-    if(!response.ok || data.error){
-      throw new Error(data.error || 'Грешка при зареждането.');
+    <div id="status" class="status" aria-live="polite">
+      Избери дата и натисни „Зареди мачовете“.
+    </div>
+
+    <section id="matches"></section>
+  </main>
+
+  <script>
+    const dateInput = document.getElementById("matchDate");
+    const loadButton = document.getElementById("loadButton");
+    const statusBox = document.getElementById("status");
+    const matchesBox = document.getElementById("matches");
+
+    function getLocalDate() {
+      const now = new Date();
+
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+      ].join("-");
     }
 
-    const fixtures=data.response || [];
-    if(!fixtures.length){
-      result.textContent='Няма намерени мачове за тази дата.';
-      return;
+    dateInput.value = getLocalDate();
+
+    const markets = [
+      "1X",
+      "Над 1,5 гола",
+      "Над 2,5 гола",
+      "Гол/гол",
+      "Над 5,5 общо корнера",
+      "Над 6,5 общо корнера"
+    ];
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, function (char) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[char];
+      });
     }
 
-    result.replaceChildren();
-    const heading=document.createElement('h2');
-    heading.textContent='Мачове за '+dateInput.value;
-    result.appendChild(heading);
+    function renderMatches(data) {
+      const games = Array.isArray(data.response) ? data.response : [];
 
-    fixtures.forEach(item=>{
-      const card=document.createElement('div');
-      card.className='match';
+      matchesBox.replaceChildren();
 
-      const title=document.createElement('h3');
-      title.textContent=(item.teams?.home?.name || 'Домакин')+
-        ' – '+(item.teams?.away?.name || 'Гост');
+      if (games.length === 0) {
+        statusBox.textContent =
+          "Няма намерени мачове от избраните първенства за тази дата.";
+        return;
+      }
 
-      const details=document.createElement('p');
-      details.textContent=
-        (item.league?.name || 'Първенство')+' · '+
-        (item.fixture?.date ? new Date(item.fixture.date).toLocaleTimeString('bg-BG',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Sofia'}) : 'Часът не е наличен');
+      statusBox.textContent = "Намерени мачове: " + games.length + ".";
 
-      card.append(title,details);
-      result.appendChild(card);
-    });
-  }catch(error){
-    result.textContent='Не успях да заредя мачовете. Провери връзката и опитай отново.';
-  }
-});
-</script>
+      for (const game of games) {
+        const home = escapeHTML(game.teams?.home?.name || "Домакин");
+        const away = escapeHTML(game.teams?.away?.name || "Гост");
+        const league = escapeHTML(game.league?.name || "Първенство");
+        const country = escapeHTML(game.league?.country || "");
+
+        let dateTime = "Часът не е наличен";
+
+        if (game.fixture?.date) {
+          dateTime = new Date(game.fixture.date).toLocaleString("bg-BG", {
+            timeZone: "Europe/Sofia",
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        }
+
+        const card = document.createElement("article");
+        card.className = "match";
+
+        const leagueLine = document.createElement("div");
+        leagueLine.className = "league";
+        leagueLine.textContent = country + " · " + league;
+
+        const teamsLine = document.createElement("div");
+        teamsLine.className = "teams";
+        teamsLine.textContent = home + " – " + away;
+
+        const timeLine = document.createElement("div");
+        timeLine.className = "time";
+        timeLine.textContent = "Начало: " + dateTime;
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Пазари за анализ";
+
+        const marketGrid = document.createElement("div");
+        marketGrid.className = "markets";
+
+        for (const marketName of markets) {
+          const market = document.createElement("div");
+          market.className = "market";
+
+          const title = document.createElement("div");
+          title.textContent = marketName;
+
+          const pending = document.createElement("span");
+          pending.className = "pending";
+          pending.textContent = "Очакват се реални данни";
+
+          market.append(title, pending);
+          marketGrid.appendChild(market);
+        }
+
+        card.append(
+          leagueLine,
+          teamsLine,
+          timeLine,
+          heading,
+          marketGrid
+        );
+
+        matchesBox.appendChild(card);
+      }
+    }
+
+    async function loadMatches() {
+      const date = dateInput.value;
+
+      if (!date) {
+        statusBox.textContent = "Моля, избери дата.";
+        return;
+      }
+
+      loadButton.disabled = true;
+      loadButton.textContent = "Зареждане...";
+      statusBox.textContent = "Зареждам мачовете...";
+      matchesBox.replaceChildren();
+
+      try {
+        const response = await fetch(
+          "/.netlify/functions/fixtures?date=" + encodeURIComponent(date)
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.response)) {
+          throw new Error("Неуспешно зареждане на мачовете.");
+        }
+
+        renderMatches(data);
+      } catch (error) {
+        statusBox.textContent =
+          "Не успях да заредя мачовете. Провери интернет връзката и опитай отново.";
+      } finally {
+        loadButton.disabled = false;
+        loadButton.textContent = "Зареди мачовете";
+      }
+    }
+
+    loadButton.addEventListener("click", loadMatches);
+  </script>
 </body>
 </html>
